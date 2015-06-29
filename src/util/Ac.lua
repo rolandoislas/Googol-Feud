@@ -43,9 +43,30 @@ local function getData(self, query)
   return data
 end
 
+local function getUniqueQid(self)
+  local list = loadList(self)
+  local qid = love.math.random(1, table.getn(list))
+  local needNew  = true
+  local didFind = false
+  while needNew do
+    for k, v in pairs(self.qid) do
+      if qid == v then
+        qid = love.math.random(1, table.getn(list))
+        didFind = true
+      end
+    end
+    if not didFind then
+      needNew = false
+    end
+  end
+  table.insert(self.qid, qid)
+  return qid
+end
+
 function Ac:getRandom(t)
   local list = loadList(self)
-  local query = list[love.math.random(1, table.getn(list))]
+  local qid = getUniqueQid(self)
+  local query = list[qid]
   local data = getData(self, query)
   return t == "json" and json:encode(data) or data
 end
@@ -60,6 +81,7 @@ end
 
 function Ac.create()
   local self = setmetatable({}, Ac)
+  self.qid = {}
   return self
 end
 
