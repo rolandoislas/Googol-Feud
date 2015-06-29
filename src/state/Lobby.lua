@@ -187,6 +187,8 @@ function Lobby:storePeers(...)
   local game = self.state:getState(states.GAME)
   local peers = {...}
   game:setClientPort(textUtil:split(peers[self.id], ":")[2])
+  print(self.client:getServerPeer())
+  game:setIP(textUtil:split(tostring(self.client:getServerPeer()), ":")[1])
   if not self.host then return end
   game:storePeers(...)
   game:setHost(true)

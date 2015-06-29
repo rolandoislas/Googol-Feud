@@ -196,7 +196,7 @@ local function setGuessData(self)
 end
 
 function GameServer:start()
-  self.host = enet.host_create("localhost:45052")
+  self.host = enet.host_create("*:45052")
   self.acData = ac:getRandom()
   setGuessData(self)
 end

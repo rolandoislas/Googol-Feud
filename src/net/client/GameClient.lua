@@ -47,7 +47,7 @@ end
 
 function GameClient:connect()
   self.host = enet.host_create(self.port and "*:" .. self.port or "*:*")
-  self.server = self.host:connect("localhost:45052")
+  self.server = self.host:connect(self.ip .. ":45052")
 end
 
 function GameClient:sendGuess(text)
@@ -59,11 +59,12 @@ function GameClient:stop()
   self.host:destroy()
 end
 
-function GameClient.create(game, port)
+function GameClient.create(game, port, ip)
   local self = setmetatable({}, GameClient)
   self.game = game
   self.port = port
   self.run = true
+  self.ip = ip
   return self
 end
 

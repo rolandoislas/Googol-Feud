@@ -98,7 +98,7 @@ local function startServer(self)
 end
 
 local function startClient(self)
-  self.client = client.create(self, self.clientPort)
+  self.client = client.create(self, self.clientPort, self.ip)
   self.client:connect()
 end
 
@@ -309,6 +309,10 @@ function Game:mousepressed(x, y, button)
   self.exitButton:mousepressed(x, y, button)
 end
 
+function Game:setIP(ip)
+  self.ip = ip
+end
+
 function Game.create()
   local self = setmetatable({}, Game)
   self.states = {}
@@ -321,7 +325,7 @@ function Game.create()
   self.textfield = {}
   self.infoMessage = {}
   self.host = false
-  self.ip = ""
+  self.ip = "localhost"
   self.playerPanels = {}
   self.playerData = {}
   self.clientPort = 0

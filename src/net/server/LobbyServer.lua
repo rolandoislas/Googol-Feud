@@ -99,7 +99,7 @@ end
 
 function LobbyServer:start()
   self.run = true
-  self.host = enet.host_create("localhost:45052")
+  self.host = enet.host_create("*:45052")
 end
 
 function LobbyServer:stop()

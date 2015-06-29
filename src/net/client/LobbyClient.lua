@@ -60,6 +60,10 @@ function LobbyClient:stop()
   self.client:destroy()
 end
 
+function LobbyClient:getServerPeer()
+  return self.server
+end
+
 function LobbyClient.create(lobby, ip)
   local self = setmetatable({}, LobbyClient)
   self.lobby = lobby
