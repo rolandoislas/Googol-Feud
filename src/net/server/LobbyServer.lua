@@ -1,4 +1,5 @@
 local codec = require "/net/common/Codec"
+local md5 = require "/util/md5"
 
 LobbyServer = {}
 LobbyServer.__index = LobbyServer
@@ -68,6 +69,11 @@ local function handleReceive(self, event)
     sendCanStart(self)
   elseif data[1] == codec.SERVER_CODE.start and canStart(self) then
     doStart(self)
+  elseif data[1] == codec.SERVER_CODE.nameChange then
+    local player = getPlayer(self, getIDFromPeer(self, event.peer))
+    player.name = (data[2] ~= nil and data[2] ~= "") and data[2] or player.name
+    player.hash = (data[3] ~= nil and data[3] ~= "") and md5.sumhexa(data[3]) or player.hash
+    sendGamestate(self)
   end
 end
 

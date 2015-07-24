@@ -1,6 +1,7 @@
 local gravatar  = require "/util/Gravatar"
 local textUtil = require "/util/TextUtil"
 local checkbox = require "/gui/Checkbox"
+local button = require "/gui/Button"
 
 PlayerPanel = {}
 PlayerPanel.__index = PlayerPanel
@@ -41,6 +42,10 @@ function PlayerPanel:draw()
     self.readyCheckbox:draw()
     love.graphics.setFont(self.readyFont)
     love.graphics.print(unpack(self.readyText))
+  end
+  -- Name change
+  if self.show.nameChange then
+    self.nameChange:draw()
   end
 end
 
@@ -123,6 +128,28 @@ local function createReadyCheckbox(self)
   self.readyText = {text, x, y}
 end
 
+local function nameChangeRequested(self)
+  for k, v in pairs(self.nameChangeListeners) do
+    local s, e = pcall(v[2], v[1], "clicked")
+    if not s then print(e) end
+  end
+end
+
+function PlayerPanel:addNameChangeListener(parent, listener)
+  table.insert(self.nameChangeListeners, {parent, listener})
+end
+
+local function createNameChange(self)
+  local width = self.width * .16
+  local height = self.height * .15
+  local x = self.nameRender[2]
+  local y = self.nameRender[3] + textUtil:getTextHeight(self.nameRender[1], self.font)
+  self.nameChange = button.create(x, y, width, height)
+  self.nameChange:setText("Change Name")
+  self.nameChange:addListener(self, nameChangeRequested)
+  self.nameChange:hide()
+end
+
 function PlayerPanel:showPoints(bool)
   self.show.points = bool
 end
@@ -133,6 +160,7 @@ end
 
 function PlayerPanel:showNameChange(bool)
   self.show.nameChange = bool
+  self.nameChange:show()
 end
 
 function PlayerPanel:showReady(bool)
@@ -146,6 +174,7 @@ end
 
 function PlayerPanel:mousepressed(x, y, button)
   self.readyCheckbox:mousepressed(x, y, button)
+  self.nameChange:mousepressed(x, y, button)
 end
 
 function PlayerPanel:setName(name)
@@ -226,6 +255,7 @@ function PlayerPanel.create(x, y, width, height)
   self.show = {}
   self.readyCheckbox = {}
   self.listeners = {}
+  self.nameChangeListeners = {}
   createFont(self)
   createIcon(self)
   createName(self)
@@ -234,6 +264,7 @@ function PlayerPanel.create(x, y, width, height)
   createShowTable(self)
   createReadyIndicator(self)
   createReadyCheckbox(self)
+  createNameChange(self)
   return self
 end
 

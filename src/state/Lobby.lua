@@ -6,6 +6,7 @@ local panel = require "/gui/PlayerPanel"
 local mb = require "/gui/MessageBox"
 local sattes = require "/data/States"
 local textUtil = require "/util/TextUtil"
+local json = require "/util/Json"
 
 Lobby = {}
 Lobby.__index = Lobby
@@ -38,6 +39,20 @@ local function startServer(self)
   self.server:start()
 end
 
+local function saveNameAndEmail(self, name, email)
+  local data = {}
+  data.name = name
+  data.email = email
+  love.filesystem.write("gravatar/profile.json", json:encode(data))
+end
+
+local function loadNameAndEmail(self)
+  if not love.filesystem.exists("gravatar/profile.json") then saveNameAndEmail(self, "", "") end
+  local profile = love.filesystem.read("gravatar/profile.json")
+  local data = json:decode(profile)
+  self.client:sendNameChange(data.name, data.email)
+end
+
 local function startClient(self)
   self.client = client.create(self, self.ip)
   self.client:connect()
@@ -51,6 +66,10 @@ local function readyClicked(self, checkbox)
   end
 end
 
+local function nameChangeRequested(self)
+  self.nameChangeWindow:show()
+end
+
 local function createPlayerPanels(self)
   self.players = {}
   local window = {love.window.getMode()}
@@ -62,9 +81,9 @@ local function createPlayerPanels(self)
     local pp = panel.create(x, y, width, height)
     pp:showPoints(false)
     pp:showErrors(false)
-    pp:showNameChange(true)
     pp:showReady(true)
     pp:addListener(self, readyClicked)
+    pp:addNameChangeListener(self, nameChangeRequested)
     table.insert(self.players, pp)
     y = y + height
   end
@@ -93,12 +112,31 @@ local function createStartButton(self)
   self.buttonStart:hide()
 end
 
+local function changeName(self, window, event, name, email)
+  self.nameChangeWindow:hide()
+  self.client:sendNameChange(name, email)
+  saveNameAndEmail(self, name, email)
+end
+
+local function createNameChangeWindow(self)
+  local window = {love.window.getMode()}
+  local width = window[1] * .4
+  local height = window[2] * .2
+  local x = window[1] / 2 - width / 2
+  local y = window[2] / 2 - height / 2
+  self.nameChangeWindow = mb.create(x, y, width, height)
+  self.nameChangeWindow:setTitle("Change Name")
+  self.nameChangeWindow:showNameChange(true)
+  self.nameChangeWindow:addListener(self, changeName)
+end
+
 function Lobby:enter(state)
   self.state = state
   createPlayerPanels(self)
   createBackButton(self)
   createErrorMessage(self)
   createStartButton(self)
+  createNameChangeWindow(self)
   startServer(self)
   startClient(self)
 end
@@ -117,6 +155,8 @@ function Lobby:update()
   if self.server ~= nil and self.host then self.server:update() end
   -- Error
   self.errorMessage:update()
+  -- Name change window
+  self.nameChangeWindow:update()
 end
 
 function Lobby:draw()
@@ -129,6 +169,8 @@ function Lobby:draw()
   end
   -- Error
   self.errorMessage:draw()
+  -- Name change
+  self.nameChangeWindow:draw()
 end
 
 function Lobby:mousepressed(x, y, button)
@@ -138,6 +180,7 @@ function Lobby:mousepressed(x, y, button)
   end
   self.errorMessage:mousepressed(x, y, button)
   self.buttonStart:mousepressed(x, y, button)
+  self.nameChangeWindow:mousepressed(x, y, button)
 end
 
 function Lobby:setIP(ip)
@@ -159,6 +202,8 @@ function Lobby:setPID(id)
   id = tonumber(id)
   self.id = id
   self.players[id]:showReadyCheckbox(true)
+  self.players[id]:showNameChange(true)
+  loadNameAndEmail(self)
 end
 
 function Lobby:setPlayerReady(id, bool)
@@ -199,12 +244,21 @@ function Lobby:start()
   self.state:enterState(states.GAME)
 end
 
+function Lobby:textinput(text)
+  self.nameChangeWindow:textinput(text)
+end
+
+function Lobby:keypressed(key)
+  self.nameChangeWindow:keypressed(key)
+end
+
 function Lobby.create()
   local self = setmetatable({}, Lobby)
   self.backbutton = {}
   self.ip = "localhost"
   self.host = false
   self.players = {}
+  self.id = nil
   return self
 end
 

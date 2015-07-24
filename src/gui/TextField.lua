@@ -141,6 +141,14 @@ function TextField:textinput(text)
   resetSelection(self)
 end
 
+function TextField:mousepressed(x, y, button)
+  if x >= self.x and y >= self.y and x <= self.x + self.width and y <= self.y + self.height then
+    self:enableInput()
+  else
+    self:disableInput()
+  end
+end
+
 function TextField:keypressed(key)
   if not self.acceptInput then return end
   --print("key: "..key)

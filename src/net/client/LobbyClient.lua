@@ -64,6 +64,10 @@ function LobbyClient:getServerPeer()
   return self.server
 end
 
+function LobbyClient:sendNameChange(name, email)
+  self.server:send(codec:encode(codec.SERVER_CODE.nameChange, name, email))
+end
+
 function LobbyClient.create(lobby, ip)
   local self = setmetatable({}, LobbyClient)
   self.lobby = lobby

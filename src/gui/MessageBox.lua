@@ -1,4 +1,6 @@
 local button = require "/gui/Button"
+local tf = require "/gui/TextField"
+local textUtil = require "/util/TextUtil"
 
 MessageBox = {}
 MessageBox.__index = MessageBox
@@ -19,10 +21,20 @@ function MessageBox:draw()
   love.graphics.print(unpack(self.title))
   love.graphics.printf(unpack(self.message))
   self.buttonConfirm:draw()
+  -- Name change
+  if self.showitems.nameChange then
+    love.graphics.print(unpack(self.nameTextBoxTitile))
+    love.graphics.print(unpack(self.emailTextBoxTitile))
+    self.emailTextBox:draw()
+    self.nameTextBox:draw()
+  end
 end
 
 function MessageBox:update()
+  if not self.visible then return end
   self.buttonConfirm:update()
+  self.emailTextBox:update()
+  self.nameTextBox:update()
 end
 
 function MessageBox:addListener(parent, listener)
@@ -50,14 +62,31 @@ function MessageBox:isVisible()
 end
 
 function MessageBox:mousepressed(x, y, button)
+  if not self.visible then return end
   self.buttonConfirm:mousepressed(x, y, button)
+  self.emailTextBox:mousepressed(x, y, button)
+  self.nameTextBox:mousepressed(x, y, button)
+end
+
+function MessageBox:keypressed(key)
+  self.emailTextBox:keypressed(key)
+  self.nameTextBox:keypressed(key)
 end
 
 local function confirmed(self)
   for k, v in pairs(self.listeners) do
-    local s, e = pcall(v[2], v[1], self, "clicked")
+    local s, e = pcall(v[2], v[1], self, "clicked", self.nameTextBox:getText(), self.emailTextBox:getText())
     if not s then print(e) end
   end
+end
+
+function MessageBox:showNameChange(bool)
+  self.showitems.nameChange = bool
+end
+
+function MessageBox:textinput(text)
+  self.emailTextBox:textinput(text)
+  self.nameTextBox:textinput(text)
 end
 
 function MessageBox.create(x, y, width, height)
@@ -74,6 +103,8 @@ function MessageBox.create(x, y, width, height)
   self.title = {"", x, y}
   self.message = {"", x, y + self.titleBox[5], self.box[4]}
   self.listeners = {}
+  self.showitems = {}
+  -- ok button
   local bw = width * .1
   local bh = height * .2
   self.buttonConfirm = button.create(x + width - bw, y + height - bh, bw, bh)
@@ -82,6 +113,19 @@ function MessageBox.create(x, y, width, height)
   self.buttonConfirm:setText("Ok")
   self.buttonConfirm:setFont(bh > 1 and bh or 1)
   self.buttonConfirm:addListener(self, confirmed)
+  -- name change
+  self.showitems.nameChange = false
+  self.nameTextBoxTitile = {"Name", x, y + self.titleBox[5]}
+  self.nameTextBox = tf.create("", x, self.nameTextBoxTitile[3] + textUtil:getTextHeight(self.nameTextBoxTitile[1], self.font) * 2, width, height * .15)
+  self.nameTextBox:setBorderColor(255, 255, 255)
+  self.nameTextBox:setTextColor(255, 255, 255)
+  local textBoxFont = height > 0 and love.graphics.newFont(height * .15) or love.graphics.newFont(1)
+  self.nameTextBox:setFont(textBoxFont)
+  self.emailTextBoxTitile = {"Email (for gravatar)", x, self.nameTextBox:getY() + self.nameTextBox:getHeight()}
+  self.emailTextBox = tf.create("", x, self.emailTextBoxTitile[3] + textUtil:getTextHeight(self.emailTextBoxTitile[1], self.font) * 2, width, height * .15)
+  self.emailTextBox:setBorderColor(255, 255, 255)
+  self.emailTextBox:setTextColor(255, 255, 255)
+  self.emailTextBox:setFont(textBoxFont)
   return self
 end
 

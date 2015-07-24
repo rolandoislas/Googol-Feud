@@ -19,7 +19,6 @@ local function addStates()
 end
 
 function love.load(arg)
-  love.filesystem.setIdentity("googol_feud")
   love.window.setTitle("Googol Feud")
   love.window.setMode(unpack(RES[1]))
   --love.window.setFullscreen(true)

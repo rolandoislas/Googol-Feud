@@ -16,6 +16,10 @@ function TextUtil:getTextWidth(text, font)
   return font:getWidth(text)
 end
 
+function TextUtil:getTextHeight(text, font)
+  return font:getHeight(text)
+end
+
 function TextUtil.create()
   local self = setmetatable({}, TextUtil)
   return self

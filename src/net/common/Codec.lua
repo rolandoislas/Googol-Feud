@@ -20,7 +20,8 @@ local CLIENT_CODE = {
 }
 local SERVER_CODE = {
   ready = "ready",
-  start = "start"
+  start = "start",
+  nameChange = "namechange"
 }
 local G_CLIENT_CODE = {
   player = "player",
