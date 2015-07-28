@@ -176,7 +176,7 @@ function GameServer:update()
     self.newTurnTime = nil
     startNewTurn(self)
   end
-  local event = self.run and self.host:service() or nil
+  local event = (self.run and self.host ~= nil) and self.host:service() or nil
   while event do
     if event.type == "receive" then
       handleReceive(self, event)

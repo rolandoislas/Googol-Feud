@@ -62,8 +62,9 @@ local function setEmptyTilesActive(self)
 end
 
 local function createTextField(self)
+  local window = {love.window.getMode()}
   local x = self.prompt[1][2]
-  local y = self.prompt[1][3] + self.prompt[2]:getHeight() + 5
+  local y = self.prompt[1][3] + self.prompt[2]:getHeight() + window[2] * 0.00694
   local width = self.prompt[1][4]
   local height = self.prompt[2]:getHeight()
   local text = ""
@@ -152,6 +153,11 @@ end
 function Game:leave()
   if self.host then self.server:stop() end
   self.client:stop()
+  self.numOfTiles = 10
+  self.drawPrompt = true
+  self.drawTextfield = true
+  self.exitButton:hide()
+  self.acData = {"what is", {"the universe", "nothing"}}
 end
 
 local function drawTiles(self)
